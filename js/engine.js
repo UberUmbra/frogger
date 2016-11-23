@@ -14,23 +14,50 @@
  * a little simpler to work with.
  */
 
+var configureSounds = function () {
+    var sounds = {
+        music: new Audio('sound/03 Chibi Ninja.mp3'),
+        roundWinSound : new Audio('sound/Jingle_achievement_01.wav'),
+        roundLooseSound : new Audio('sound/Hero_Death_00.wav'),
+        jumpSounds: [],
+        gameOverSound: new Audio('sound/Jingle_Lose_00.wav')
+    };
+
+    sounds.music.volume = 0.5;
+    sounds.music.play();
+    sounds.music.loop = true;
+
+    sounds.jumpSounds = [];
+    sounds.jumpSounds[0] = new Audio('sound/Jump_00.wav');
+    sounds.jumpSounds[1] = new Audio('sound/Jump_01.wav');
+    sounds.jumpSounds[2] = new Audio('sound/Jump_02.wav');
+    sounds.jumpSounds.every(function (sound) {
+        sound.volume = 0.7
+    });
+    return sounds;
+};
+
 var Engine = (function(global) {
     /* Predefine the variables we'll be using within this scope,
      * create the canvas element, grab the 2D context for that canvas
      * set the canvas elements height/width and add it to the DOM.
      */
+
+    var credits = "SFX: http://www.littlerobotsoundfactory.com/" +
+        "Music: Chibi Ninja by Eric Skiff, http://ericskiff.com/ ";
+
     var doc = global.document,
         win = global.window,
         canvas = doc.createElement('canvas'),
         ctx = canvas.getContext('2d'),
         lastTime;
 
-    const CELL_WIDTH = 101;
-    const CELL_HEIGHT = 83;
-
     canvas.width = CELL_WIDTH*5;
     canvas.height = 606;
     doc.body.appendChild(canvas);
+    var sounds = configureSounds();
+
+    this.game = new Game(sounds);
 
     /* This function serves as the kickoff point for the game loop itself
      * and handles properly calling the update and render methods.
@@ -82,22 +109,7 @@ var Engine = (function(global) {
      * on the entities themselves within your app.js file).
      */
     function update(dt) {
-        updateEntities(dt);
-        // checkCollisions();
-    }
-
-    /* This is called by the update function and loops through all of the
-     * objects within your allEnemies array as defined in app.js and calls
-     * their update() methods. It will then call the update function for your
-     * player object. These update methods should focus purely on updating
-     * the data/properties related to the object. Do your drawing in your
-     * render methods.
-     */
-    function updateEntities(dt) {
-        allEnemies.forEach(function(enemy) {
-            enemy.update(dt);
-        });
-        player.update(dt);
+        this.game.update(dt);
     }
 
     /* This function initially draws the "game level", it will then call
@@ -152,11 +164,7 @@ var Engine = (function(global) {
         /* Loop through all of the objects within the allEnemies array and call
          * the render function you have defined.
          */
-        allEnemies.forEach(function(enemy) {
-            enemy.render();
-        });
-
-        player.render();
+        this.game.render();
     }
 
     /* This function does nothing but it could have been a good place to
@@ -180,7 +188,13 @@ var Engine = (function(global) {
         'images/Selector.png',
         'images/char-pink-girl.png',
         'images/char-cat-girl.png',
-        'images/char-horn-girl.png'
+        'images/char-horn-girl.png',
+        'images/YouWin.png',
+        'images/WatchOut.png',
+        'images/LooseALife.png',
+        'images/avoidBugs.png',
+        'images/GameOver.png'
+
     ]);
     Resources.onReady(init);
 

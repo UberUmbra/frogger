@@ -1,36 +1,5 @@
-const JUMP_TIME = 0.2;
-const CELL_WIDTH = 101;
-const CELL_HEIGHT = 83;
-const SCREEN_SIZE = 505;
-
-var AnimatedSprite = function(x, y, sprite) {
-    this.x= x ? x : 0;
-    this.y= y ? y : 0;
-    this.sprite = sprite;
-};
-
-AnimatedSprite.prototype.render = function() {
-    ctx.drawImage(Resources.get(this.sprite), this.x, this.y);
-};
-
-// Enemies our player must avoid
-var Enemy = function(startY) {
-    AnimatedSprite.call(this, Math.random()*400, startY, 'images/enemy-bug.png');
-    this.startY = startY;
-    this.velocity = Math.random()*150;
-};
-
-Enemy.prototype = Object.create(AnimatedSprite.prototype);
-// Update the enemy's position, required method for game
-// Parameter: dt, a time delta between ticks
-Enemy.prototype.update = function(dt) {
-    this.x += Math.ceil(this.velocity * dt);
-
-    if(this.x> SCREEN_SIZE) this.x = -100;
-    this.y = this.startY + this.x%10 / 5;
-};
-
-var Player = function() {
+var Player = function(sounds) {
+    this.sounds = sounds;
     AnimatedSprite.call(this, 200, 300, 'images/char-pink-girl.png');
     this.gridX=2;
     this.gridY=5;
@@ -135,15 +104,21 @@ Player.prototype.handleInput = function(direction) {
 Player.prototype.jumpToCellHorizontally = function (cellOffset) {
     var jumpToX = this.getCellX(this.gridX + cellOffset);
     var jumpToY = this.getCellY(this.gridY);
+    this.playJumpSound();
     this.update = jumpHorizontally(this.x, jumpToX, jumpToY, 50, function() {
         this.gridX += cellOffset;
         this.update = jumpInPlace(jumpToX, jumpToY).bind(this);
     }.bind(this));
 };
 
+Player.prototype.playJumpSound = function () {
+    this.sounds.jumpSounds[Math.floor(Math.random()*3)].play();
+};
+
 Player.prototype.jumpToCellVertically = function (cellOffset) {
     var jumpToX = this.getCellX(this.gridX);
     var jumpToY = this.getCellY(this.gridY + cellOffset);
+    this.playJumpSound();
     this.update = jumpVertically(this.x, this.getCellY(this.gridY), jumpToY, 50, function() {
         this.gridY += cellOffset;
         this.update = jumpInPlace(jumpToX, jumpToY).bind(this);
@@ -157,24 +132,3 @@ Player.prototype.getCellX = function(cellX){
 Player.prototype.getCellY = function(cellY){
     return cellY*CELL_HEIGHT - 40;
 };
-
-
-// Now instantiate your objects.
-// Place all enemy objects in an array called allEnemies
-// Place the player object in a variable called player
-
-allEnemies = [ new Enemy(50), new Enemy(135), new Enemy(220)];
-player = new Player();
-
-// This listens for key presses and sends the keys to your
-// Player.handleInput() method. You don't need to modify this.
-document.addEventListener('keyup', function(e) {
-    var allowedKeys = {
-        37: 'left',
-        38: 'up',
-        39: 'right',
-        40: 'down'
-    };
-
-    player.handleInput(allowedKeys[e.keyCode]);
-});
